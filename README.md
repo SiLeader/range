@@ -3,7 +3,7 @@ Range C++ Library
 Copyright (C) 2017 SiLeader. All rights reserved.  
 Licensed under Mozilla Public License 2.0.
 (https://opensource.org/licenses/MPL-2.0)
-
+https://travis-ci.org/SiLeader/range.svg?branch=master
 # Overview
 Range is container for "range-based for".  
 This class has std::vector and can use all functions that are in std::vector.  
