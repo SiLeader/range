@@ -100,8 +100,8 @@ namespace range {
             return *this;
         }
 
-        range map(std::function<T(T)> f)const {
-            return range(this->size(), [&](std::size_t i){
+        template<class R> range<R> map(std::function<R(T)> f)const {
+            return range<R>(this->size(), [&](std::size_t i){
                 return f(m_container[i]);
             });
         }

@@ -32,13 +32,13 @@ int main() {
 
     std::cout<<"construct from vector -> map -> reduce(for_each)"<<std::endl;
     auto result=range::range<int>(num_vector)
-    .map([](int num){
-        return num*num;
+    .map<std::string>([](int num){
+        return std::to_string(num*num);
     })
-    .reduce<int>([](range::range<int> r){
-        int sum=0;
-        r.for_each([&](int& num) {
-            sum+=num;
+    .reduce<std::string>([](range::range<std::string> r){
+        std::string sum;
+        r.for_each([&](std::string& str) {
+            sum+=str;
         });
         return sum;
     });

@@ -1,4 +1,4 @@
-TARGET		= test
+TARGET		= test.out
 CXXFLAGS	= -std=c++11 -I..
 SOURCES		= test.cpp
 
