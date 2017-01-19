@@ -1,8 +1,10 @@
-Range C++ Library
+Range C++ Container
 =====
 Copyright (C) 2017 SiLeader. All rights reserved.  
 Licensed under Mozilla Public License 2.0.
 (https://opensource.org/licenses/MPL-2.0)  
+# Version
+1.0.0-rel
 [![Build Status](https://travis-ci.org/SiLeader/range.svg?branch=master)](https://travis-ci.org/SiLeader/range)
 # Overview
 Range is container for "range-based for".  
