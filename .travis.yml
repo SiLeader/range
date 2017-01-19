@@ -1,4 +1,4 @@
-language: cpp
+language: generic
 
 script:
   - cd test && make build
