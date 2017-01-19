@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-#include "../range.hpp"
+#include <range.hpp>
 
 int main() {
     std::cout<<"std::initializer_list"<<std::endl;

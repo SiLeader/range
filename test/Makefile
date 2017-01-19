@@ -1,0 +1,11 @@
+TARGET		= test
+CXXFLAGS	= -std=c++11 -I..
+SOURCES		= test.cpp
+
+.PHONY: build
+build:
+	$(CXX) -o $(TARGET) $(CXXFLAGS) $(SOURCES)
+
+.PHONY: clean
+clean:
+	rm -f $(TARGET) *.o *.out

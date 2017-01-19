@@ -14,6 +14,7 @@
 namespace range {
     template<class T, class Allocator=std::allocator<T>>class range {
     public:
+        using range_type=::range::range<T, Allocator>;
         using container_type=std::vector<T, Allocator>;
         using reference=typename container_type::reference;
         using const_reference=typename container_type::const_reference;
@@ -104,7 +105,7 @@ namespace range {
                 return f(m_container[i]);
             });
         }
-        template<class R> R reduce(std::function<R(range::range<T>)> f)const {
+        template<class R> R reduce(std::function<R(range_type)> f)const {
             return f(*this);
         }
 
