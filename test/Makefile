@@ -1,5 +1,5 @@
 TARGET		= test.out
-CXXFLAGS	= -std=c++11 -I..
+CXXFLAGS	= -std=c++11 -I.. -lpthread
 SOURCES		= test.cpp
 
 .PHONY: build
