@@ -7,11 +7,75 @@
 #ifndef SILEADER_RANGE_RANGE_HPP
 #define SILEADER_RANGE_RANGE_HPP
 
-#include <vector>
-#include <type_traits>
 #include <functional>
 
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <queue>
+#include <utility>
+
+#include <vector>
+
 namespace range {
+    /* Thread Pool class */
+    class thread_pool {
+    public:
+        using func=std::function<void()>;
+    private:
+        std::vector<std::thread> m_threads;
+        std::size_t m_threads_count;
+        std::queue<func> m_queue;
+        std::mutex m_queue_mutex;
+        std::atomic<bool> m_end;
+
+        static constexpr std::nullptr_t INVALID_OR_USED_FUNCTION=nullptr;
+
+        // Function runner
+        void runner() {
+            func f;
+            // m_end==true && m_queue==empty -> exit this while loop
+            while(!m_end || (!m_queue.empty())) {
+                m_queue_mutex.lock();
+                if(!m_queue.empty()) {
+                    f=std::move(m_queue.front());
+                    m_queue.pop();
+                }
+                m_queue_mutex.unlock();
+                if(f) {
+                    f();
+                    // function mark used.
+                    f=INVALID_OR_USED_FUNCTION;
+                }
+            }
+        }
+    public:
+        thread_pool()=delete;
+        /* count -> thread count */
+        thread_pool(std::size_t count) : m_threads_count(count) {
+            m_end=false;
+            for(std::size_t i=0; i<count; ++i) {
+                m_threads.push_back(std::thread(&thread_pool::runner, this));
+            }
+        }
+        ~thread_pool() {
+            m_end=true;
+            for(auto&& t : m_threads) {
+                t.join();
+            }
+        }
+
+        void add(func f) {
+            m_queue_mutex.lock();
+            m_queue.push(f);
+            m_queue_mutex.unlock();
+        }
+
+        std::size_t size() const noexcept {
+            return m_threads_count;
+        }
+    };
+
     template<class T, class Allocator=std::allocator<T>>class range {
     public:
         using range_type=::range::range<T, Allocator>;
@@ -29,15 +93,15 @@ namespace range {
         using const_reverse_iterator=typename container_type::const_reverse_iterator;
     private:
         container_type m_container;
-    public:
-        /* constructors */
+    public:/* constructors */
         range()=default;
         range(const range&)=default;
         range(range&&)=default;
 
         range(const container_type& container) : m_container(container) {}
         range(container_type&& container) : m_container(container) {}
-        template<std::size_t N>range(const T arr[N]) : m_container(std::begin(arr), std::end(arr)) {}
+        template<std::size_t N> range(const T arr[N]) : m_container(std::begin(arr), std::end(arr)) {}
+        template<class InputIterator> range(InputIterator first, InputIterator last) : m_container(first, last) {}
 
         range(std::initializer_list<T> ilist) : m_container(ilist) {}
         range(const T& start, const T& last) {
@@ -50,7 +114,7 @@ namespace range {
                 m_container.push_back(i);
             }
         }
-        range(std::size_t count, const T& start, bool is_increment=true) {
+        range(std::size_t count, const T& start, bool is_increment=false) {
             T val=start;
             for(std::size_t i=0; i<count; ++i) {
                 m_container.push_back(val);
@@ -70,7 +134,7 @@ namespace range {
             }
         }
 
-        /* assign operators */
+    public:/* assign operators */
         range& operator=(const range& rhs)=default;
         range& operator=(range&& rhs)=default;
 
@@ -87,9 +151,17 @@ namespace range {
             return *this;
         }
 
+    public:/* extend functions */
+        range to_reverse() const {
+            return ::range::range<T>(this->crbegin(), this->crend());
+        }
+        range reverse() const {
+            return to_reverse();
+        }
+
         range& reverse() {
             container_type tmp(m_container.rbegin(), m_container.rend());
-            std::swap(m_container, tmp);
+            m_container.swap(tmp);
             return *this;
         }
 
@@ -115,6 +187,16 @@ namespace range {
             }
             return *this;
         }
+        range& async_for_each(::range::thread_pool& tp, std::function<void(T)> f) {
+            for(auto v : m_container) {
+                tp.add(std::bind(f, v));
+            }
+            return *this;
+        }
+        range& async_for_each(std::function<void(T)> f) {
+            ::range::thread_pool tp(std::thread::hardware_concurrency());
+            return async_for_each(tp, f);
+        }
 
         range& assign(std::size_t count, std::function<T()> generator) {
             m_container.clear();
@@ -131,7 +213,7 @@ namespace range {
             return *this;
         }
 
-        /* std::vector functions */
+    public:/* std::vector functions */
         auto begin() noexcept -> iterator {
             return m_container.begin();
         }
@@ -291,12 +373,12 @@ namespace range {
         iterator erase(const_iterator first, const_iterator last) {
             return m_container.erase(first, last);
         }
-        range& swap(std::vector<T>& val) {
-            m_container.swap(val);
+        range& swap(container_type& val) {
+            std::swap(m_container, val);
             return *this;
         }
         range& swap(range& val) {
-            return swap(val.m_container);
+            return this->swap(val.m_container);
         }
         range& clear() {
             m_container.clear();

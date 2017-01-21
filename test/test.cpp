@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include <range.hpp>
 
@@ -14,8 +15,16 @@ int main() {
     for(auto&& str : range::range<std::string>({"a", "b", "c", "d", "e", "f"})) {
         std::cout<<str<<std::endl;
     }
-    std::cout<<"std::initializer_list(reverse)"<<std::endl;
-    for(auto&& str : range::range<std::string>({"a", "b", "c", "d", "e", "f"}).reverse()) {
+
+    std::cout<<"std::initializer_list(to_reverse)"<<std::endl;
+    for(auto&& str : range::range<std::string>({"a", "b", "c", "d", "e", "f"}).to_reverse()) {
+        std::cout<<str<<std::endl;
+    }
+
+    std::cout<<"reverse container"<<std::endl;
+    range::range<std::string> r({"a", "b", "c", "d", "e", "f"});
+    r.reverse();
+    for(auto&& str : r) {
         std::cout<<str<<std::endl;
     }
 
@@ -43,4 +52,9 @@ int main() {
         return sum;
     });
     std::cout<<result<<std::endl;
+
+    std::cout<<"async_for_each"<<std::endl;
+    range::range<int>(num_vector).async_for_each([](int v) {
+        std::cout<<v<<std::endl;
+    });
 }

@@ -6,6 +6,10 @@ SOURCES		= test.cpp
 build:
 	$(CXX) -o $(TARGET) $(CXXFLAGS) $(SOURCES)
 
+.PHONY: debug
+debug:
+	$(CXX) -o $(TARGET) $(CXXFLAGS) -g $(SOURCES)
+
 .PHONY: clean
 clean:
 	rm -f $(TARGET) *.o *.out
